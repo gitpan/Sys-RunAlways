@@ -4,7 +4,7 @@ package Sys::RunAlways;
 # Make sure we're strict
 # Make sure we know how to lock
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 use strict;
 use Fcntl ':flock';
 
@@ -27,7 +27,7 @@ INIT {
     print( STDERR "Add __END__ to end of script '$0'\n" ),exit 2
      if tell( *main::DATA ) == -1;
     exit 0 unless flock main::DATA,LOCK_EX | LOCK_NB;
-    print( STDERR "'$0' has been started at ".(time)."\n");
+    print( STDERR "'$0' has been started at ".(scalar time)."\n");
 } #INIT
 
 #---------------------------------------------------------------------------
