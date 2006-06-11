@@ -4,7 +4,7 @@ package Sys::RunAlways;
 # Make sure we're strict
 # Make sure we know how to lock
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 use strict;
 use Fcntl ':flock';
 
@@ -73,9 +73,22 @@ STDERR and execution continues without any further interference.
 
 =head1 CAVEATS
 
+=head2 symlinks
+
 Execution of scripts that are (sym)linked to another script, will all be seen
 as execution of the same script, even though the error message will only show
 the specified script name.  This could be considered a bug or a feature.
+
+=head2 changing a running script
+
+If you change the script while it is running, the script will effectively
+lose its lock on the file.  Causing any subsequent run of the same script
+to be successful, causing two instances of the same script to run at the
+same time (which is what you wanted to prevent by using Sys::RunAlone in
+the first place).  Therefore, make sure that no instances of the script are
+running (and won't be started by cronjobs while making changes) if you really
+want to be 100% sure that only one instance of the script is running at the
+same time.
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -92,7 +105,7 @@ L<Sys::RunAlone>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005 Elizabeth Mattijsen <liz@dijkmat.nl>. All rights
+Copyright (c) 2005-2006 Elizabeth Mattijsen <liz@dijkmat.nl>. All rights
 reserved.  This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
