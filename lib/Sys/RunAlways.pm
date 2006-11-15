@@ -1,15 +1,16 @@
 package Sys::RunAlways;
 
-# Set version
-# Make sure we're strict
-# Make sure we know how to lock
+# version info
+$VERSION = '0.04';
 
-$VERSION = '0.03';
+# be as strict and verbose as possible
 use strict;
+use warnings;
+
+# make sure we know how to lock
 use Fcntl ':flock';
 
-# Satisfy -require-
-
+# satisfy -require-
 1;
 
 #---------------------------------------------------------------------------
@@ -18,15 +19,18 @@ use Fcntl ':flock';
 #
 #---------------------------------------------------------------------------
 
-# Run this when we start executing
-#  Let the world know if there's no DATA handle and quit
-#  Return now if the script is already running
-#  Let the world know we've started and continue
-
 INIT {
-    print( STDERR "Add __END__ to end of script '$0'\n" ),exit 2
+    # no warnings here
+    no warnings;
+
+    # no data handle, we're screwed
+    print( STDERR "Add __END__ to end of script '$0' to be able use the features of Sys::RunAlways\n" ),exit 2
      if tell( *main::DATA ) == -1;
-    exit 0 unless flock main::DATA,LOCK_EX | LOCK_NB;
+
+    # we're still running
+    exit 0 if !flock main::DATA,LOCK_EX | LOCK_NB;
+
+    # we're starting
     print( STDERR "'$0' has been started at ".(scalar time)."\n");
 } #INIT
 
@@ -47,6 +51,10 @@ Sys::RunAlways - make sure there is always one invocation of a script active
 
 Provide a simple way to make sure the script from which this module is
 loaded, is always running on the server.
+
+=head1 VERSION
+
+This documentation describes version 0.04.
 
 =head1 METHODS
 
