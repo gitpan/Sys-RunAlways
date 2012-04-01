@@ -1,7 +1,7 @@
 package Sys::RunAlways;
 
 # version info
-$VERSION = '0.04';
+$VERSION= '0.05';
 
 # be as strict and verbose as possible
 use strict;
@@ -10,14 +10,37 @@ use warnings;
 # make sure we know how to lock
 use Fcntl ':flock';
 
+# process local storage
+my $silent;
+
 # satisfy -require-
 1;
 
-#---------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #
 # Standard Perl functionality
 #
-#---------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+# import
+#
+#  IN: 1 class (not used)
+#      2 .. N options (default: none)
+
+sub import {
+    my ( undef, %args )= @_;
+
+    # obtain parameters
+    $silent= delete $args{silent};
+
+    # sanity check
+    if ( my @huh= sort keys %args ) {
+        die "Don't know what to do with: @huh";
+    }
+
+    return;
+} #import
+
+#-------------------------------------------------------------------------------
 
 INIT {
     # no warnings here
@@ -30,11 +53,12 @@ INIT {
     # we're still running
     exit 0 if !flock main::DATA,LOCK_EX | LOCK_NB;
 
-    # we're starting
-    print( STDERR "'$0' has been started at ".(scalar time)."\n");
+    # tell the world if necessary
+    printf STDERR "'%s' has been started at %s\n", $0, scalar time
+      if !$silent;
 } #INIT
 
-#---------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
 __END__
 
@@ -47,6 +71,9 @@ Sys::RunAlways - make sure there is always one invocation of a script active
  use Sys::RunAlways;
  # code of which there must always be on instance running on system
 
+ use Sys::RunAlways silent => 1;  # don't tell the world we're starting
+ # code of which there must always be on instance running on system
+
 =head1 DESCRIPTION
 
 Provide a simple way to make sure the script from which this module is
@@ -54,7 +81,7 @@ loaded, is always running on the server.
 
 =head1 VERSION
 
-This documentation describes version 0.04.
+This documentation describes version 0.05.
 
 =head1 METHODS
 
@@ -73,7 +100,11 @@ If the DATA handle is available, and it cannot be C<flock>ed, it exits
 silently with an exit value of 0.
 
 If there is a DATA handle, and it could be C<flock>ed, a message is put on
-STDERR and execution continues without any further interference.
+STDERR and execution continues without any further interference.  Optionally,
+the message on STDERR can be prevented by specifying the "silent" parameter
+in the C<use> statement with a true value, like:
+
+  use Sys::RunAlways silent => 1;
 
 =head1 REQUIRED MODULES
 
@@ -113,7 +144,7 @@ L<Sys::RunAlone>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005-2006 Elizabeth Mattijsen <liz@dijkmat.nl>. All rights
+Copyright (c) 2005, 2006, 2012 Elizabeth Mattijsen <liz@dijkmat.nl>. All rights
 reserved.  This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
